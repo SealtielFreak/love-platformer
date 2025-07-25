@@ -5,7 +5,7 @@ export function moveController(
     speed: number = 1,
     dir: [number, number] = [1, 1]
 ): Vector2 {
-    let move = new Vector2();
+    const move = new Vector2();
     speed *= dt;
 
     if (dir[0] != 0) {
@@ -28,7 +28,7 @@ export function moveController(
 }
 
 export function jumpController(dt: number = 1, speed: number = 1): Vector2 {
-    let jump = new Vector2();
+    const jump = new Vector2();
 
     if (love.keyboard.isDown('space', 'w')) {
     }

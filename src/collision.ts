@@ -54,7 +54,7 @@ const emptyResponse: ResponseFuntion = <T extends Rect>(
     b: T
 ) => {};
 
-let defaultResponseDictionary: ResponseDictionary = new Map();
+const defaultResponseDictionary: ResponseDictionary = new Map();
 
 //defaultResponseDictionary.set('touch', touchResponse)
 defaultResponseDictionary.set('cross', crossResponse);
@@ -69,17 +69,17 @@ const resolveAxisCollisition = <T extends Rect>(
     others: T[],
     filter?: FilterFunction
 ): ColisionInformation<T>[] => {
-    let collisions: ColisionInformation<T>[] = [];
-    let innerFilter = filter || ((a: T, b: T) => 'slide');
+    const collisions: ColisionInformation<T>[] = [];
+    const innerFilter = filter || ((a: T, b: T) => 'slide');
 
     current.move(goal);
 
     others.forEach((other) => {
         if (isOverloadRect(current, other)) {
-            let nameResponse = innerFilter(current, other);
-            let response = responses.get(nameResponse) || emptyResponse;
+            const nameResponse = innerFilter(current, other);
+            const response = responses.get(nameResponse) || emptyResponse;
 
-            let collisionGenerator = new CollisionInformationGenerator(
+            const collisionGenerator = new CollisionInformationGenerator(
                 current,
                 other
             );
@@ -194,7 +194,7 @@ export class Vector2
     }
 
     equals(...others: Vector2[]): boolean {
-        for (let other of others) {
+        for (const other of others) {
             if (this.x == other.x && this.y == other.y) {
                 return true;
             }
@@ -204,7 +204,7 @@ export class Vector2
     }
 
     add(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y);
+        const result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
             result.x += other.x;
@@ -215,7 +215,7 @@ export class Vector2
     }
 
     sub(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y);
+        const result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
             result.x -= other.x;
@@ -226,7 +226,7 @@ export class Vector2
     }
 
     mul(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y);
+        const result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
             result.x *= other.x;
@@ -237,7 +237,7 @@ export class Vector2
     }
 
     div(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y);
+        const result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
             result.x /= other.x;
@@ -248,7 +248,7 @@ export class Vector2
     }
 
     pow(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y);
+        const result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
             result.x = result.x ** other.x;
@@ -353,7 +353,7 @@ export class Rect implements ReferenceObject<Rect>, StringObject {
     }
 
     equals(...others: Rect[]): boolean {
-        for (let other of others) {
+        for (const other of others) {
             if (
                 this.__position.equals(other.__position) &&
                 this.__size.equals(other.__size)
@@ -501,8 +501,8 @@ export class LinearCollision<T extends Rect> implements CollisionSystem<T> {
         current: T,
         filter?: FilterFunction
     ): [Vector2, ColisionInformation<T>[]] {
-        let rect = new Rect(current.position, current.size);
-        let collisions = resolveCollision(
+        const rect = new Rect(current.position, current.size);
+        const collisions = resolveCollision(
             this.__responses,
             move,
             rect,

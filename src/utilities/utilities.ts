@@ -11,7 +11,7 @@ export function range(a: number, b?: number): number[] {
         [a, b] = [0, a];
     }
 
-    let arr: number[] = [];
+    const arr: number[] = [];
     const length = diference(a, b);
 
     for (let i = 0; i < length; i++, a++) {
@@ -62,7 +62,7 @@ export class ClosurePrintLine {
     }
 
     call(...args: string[]) {
-        for (let arg of args) {
+        for (const arg of args) {
             love.graphics.print(
                 arg,
                 this._position.x,
