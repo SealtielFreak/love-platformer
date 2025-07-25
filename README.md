@@ -1,1 +1,1 @@
-# collisions-ts
+# Love Platformer (demo)
