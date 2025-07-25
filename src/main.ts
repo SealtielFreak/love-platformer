@@ -1,3 +1,4 @@
+import { Canvas } from 'love.graphics';
 import { closureCallableGenerator, ClosurePrintLine } from '@utils/utilities';
 import {
     CollisionSystem,
@@ -7,7 +8,6 @@ import {
     Vector2,
 } from '@/collision';
 import { moveController } from '@/controlls';
-import { Canvas } from 'love.graphics';
 
 function rangeAxis2D(x: number, y: number): number[][] {
     const arr = [];
@@ -37,7 +37,7 @@ const levelMap = [
 ];
 
 const random = love.math.random;
-const direcction: string[] = [];
+const direction: string[] = [];
 
 /* World variables */
 const speedGravity = 2000;
@@ -85,6 +85,7 @@ function rgbGenerator(
 
 class Tile extends Rect {
     public color: [number, number, number];
+    public readonly id: number;
 
     constructor(
         position: Vector2,
@@ -99,46 +100,25 @@ class Tile extends Rect {
         }
 
         this.color = color;
-        this._id = id;
-    }
-
-    private _id: number;
-
-    get id(): number {
-        return this._id;
+        this.id = id;
     }
 }
 
 class Player extends Rect {
     public color: [number, number, number];
-    private _moveSpeed: number;
+    public readonly isGravity: boolean;
+    public readonly isJump: boolean;
+    public readonly isSliping: boolean;
+    private readonly moveSpeed: number;
 
     constructor(position: Vector2, size: Vector2) {
         super(position, size);
 
         this.color = [1, 1 / 2, 0];
-        this._moveSpeed = 250;
-        this._isGravity = false;
-        this._isJump = false;
-        this._isSliping = false;
-    }
-
-    private _isGravity: boolean;
-
-    get isGravity(): boolean {
-        return this._isGravity;
-    }
-
-    private _isJump: boolean;
-
-    get isJump(): boolean {
-        return this._isJump;
-    }
-
-    private _isSliping: boolean;
-
-    get isSliping(): boolean {
-        return this._isSliping;
+        this.moveSpeed = 250;
+        this.isGravity = false;
+        this.isJump = false;
+        this.isSliping = false;
     }
 }
 
@@ -177,10 +157,10 @@ love.load = () => {
 
     level.forEach((item) => worldCollisionSystem.add(item));
 
-    direcction[DirectionRect.bottom] = 'Bottom';
-    direcction[DirectionRect.top] = 'Top';
-    direcction[DirectionRect.left] = 'Left';
-    direcction[DirectionRect.right] = 'Right';
+    direction[DirectionRect.bottom] = 'Bottom';
+    direction[DirectionRect.top] = 'Top';
+    direction[DirectionRect.left] = 'Left';
+    direction[DirectionRect.right] = 'Right';
 };
 
 love.update = (dt: number) => {
