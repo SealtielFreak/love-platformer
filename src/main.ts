@@ -1,19 +1,16 @@
-import {
-    closureCallableGenerator,
-    ClosurePrintLine,
-} from './utilities/utilities';
+import { closureCallableGenerator, ClosurePrintLine } from '@utils/utilities';
 import {
     CollisionSystem,
     DirectionRect,
     LinearCollision,
     Rect,
     Vector2,
-} from './collision';
-import { moveController } from './controlls';
+} from '@/collision';
+import { moveController } from '@/controlls';
 import { Canvas } from 'love.graphics';
 
 function rangeAxis2D(x: number, y: number): number[][] {
-    let arr = [];
+    const arr = [];
 
     for (let _y = 0; _y < y; _y++) {
         for (let _x = 0; _x < x; _x++) {
@@ -49,7 +46,7 @@ const speedGravity = 2000;
 let player: Player;
 let jumpGravity = speedGravity;
 let score = 0;
-let moveSpeed = 250;
+const moveSpeed = 250;
 let isGround = false;
 let isJump = false;
 let isSlipling = false;
@@ -202,7 +199,7 @@ love.update = (dt: number) => {
 
     move.y += jumpGravity * dt;
 
-    let [movePlayer, collisions] = worldCollisionSystem.move(
+    const [movePlayer, collisions] = worldCollisionSystem.move(
         move,
         player,
         (a: any, b: any) => {
@@ -218,7 +215,7 @@ love.update = (dt: number) => {
     isSlipling = false;
 
     collisions.forEach((collision) => {
-        let item = collision.other;
+        const item = collision.other;
 
         if (item.id == 3) {
             const index = level.indexOf(item);

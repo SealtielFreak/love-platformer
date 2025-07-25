@@ -1,4 +1,4 @@
-import { Vector2 } from '../collision';
+import { Vector2 } from '@/collision';
 
 export interface ObjectCallable {
     call(...args: any[]): void;

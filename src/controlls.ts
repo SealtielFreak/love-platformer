@@ -1,4 +1,4 @@
-import { Vector2 } from './collision';
+import { Vector2 } from '@/collision';
 
 export function moveController(
     dt: number = 1,
