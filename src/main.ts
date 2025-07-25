@@ -1,14 +1,14 @@
-import { closureCallableGenerator, ClosurePrintLine} from "./utilities/utilities";
-import { Rect, CollisionSystem, LinearCollision, Vector2, DirectionRect } from "./collision";
-import { moveController } from "./controlls";
-import { Canvas } from "love.graphics";
+import {closureCallableGenerator, ClosurePrintLine} from "./utilities/utilities";
+import {CollisionSystem, DirectionRect, LinearCollision, Rect, Vector2} from "./collision";
+import {moveController} from "./controlls";
+import {Canvas} from "love.graphics";
 
 
 function rangeAxis2D(x: number, y: number): number[][] {
     let arr = []
 
-    for(let _y = 0; _y < y; _y++) {
-        for(let _x = 0; _x < x; _x++) {
+    for (let _y = 0; _y < y; _y++) {
+        for (let _x = 0; _x < x; _x++) {
             arr.push([_x, _y])
         }
     }
@@ -81,18 +81,19 @@ function rgbGenerator(r: number, g: number, b: number): [number, number, number]
 
 class Tile extends Rect {
     public color: [number, number, number]
-    private _id: number
-    
+
     constructor(position: Vector2, size: Vector2, id: number, color?: [number, number, number]) {
         super(position, size)
-        
-        if(typeof color == 'undefined') {
+
+        if (typeof color == 'undefined') {
             color = randomColor()
         }
-        
+
         this.color = color;
         this._id = id
     }
+
+    private _id: number
 
     get id(): number {
         return this._id
@@ -102,13 +103,10 @@ class Tile extends Rect {
 class Player extends Rect {
     public color: [number, number, number]
     private _moveSpeed: number
-    private _isGravity: boolean
-    private _isJump: boolean
-    private _isSliping: boolean
 
     constructor(position: Vector2, size: Vector2) {
         super(position, size)
-        
+
         this.color = [1, 1 / 2, 0]
         this._moveSpeed = 250
         this._isGravity = false
@@ -116,13 +114,19 @@ class Player extends Rect {
         this._isSliping = false
     }
 
+    private _isGravity: boolean
+
     get isGravity(): boolean {
         return this._isGravity
     }
 
+    private _isJump: boolean
+
     get isJump(): boolean {
         return this._isJump
     }
+
+    private _isSliping: boolean
 
     get isSliping(): boolean {
         return this._isSliping
@@ -138,7 +142,7 @@ love.load = () => {
     worldCollisionSystem = new LinearCollision<Tile>()
     player = new Player(new Vector2(sizeWindows[0] / 2, 0), new Vector2(24, 48))
     level = []
-    
+
     colors[1] = rgbGenerator(98, 205, 252)
     colors[2] = rgbGenerator(101, 217, 230)
     colors[3] = rgbGenerator(105, 255, 237)
@@ -149,8 +153,8 @@ love.load = () => {
         const id = levelMap[i]
         const size = 30
         const item = new Tile(new Vector2(v[0] * size, v[1] * size), new Vector2(size, size), id)
-        
-        if(id > 0) {
+
+        if (id > 0) {
             item.color = colors[id]
             level.push(item)
         }
@@ -168,18 +172,18 @@ love.update = (dt: number) => {
     let move = new Vector2()
 
     move = move.add(moveController(dt, moveSpeed, [1, 0]))
-        
-    if(player.y > sizeWindows[1]) {
+
+    if (player.y > sizeWindows[1]) {
         player.position.assign(new Vector2(sizeWindows[0] / 2, (player.y) % (sizeWindows[1] + player.height)))
     }
 
     move.y += jumpGravity * dt
 
     let [movePlayer, collisions] = worldCollisionSystem.move(move, player, (a: any, b: any) => {
-        if((b as Tile).id == 3) {
+        if ((b as Tile).id == 3) {
             return 'cross'
         }
-        
+
         return 'slide'
     })
 
@@ -189,10 +193,10 @@ love.update = (dt: number) => {
     collisions.forEach((collision) => {
         let item = collision.other
 
-        if(item.id == 3) {
+        if (item.id == 3) {
             const index = level.indexOf(item)
 
-            if(index > -1) {
+            if (index > -1) {
                 level.splice(index, 1)
                 worldCollisionSystem.remove(item)
                 score++
@@ -205,7 +209,7 @@ love.update = (dt: number) => {
             isGround = true
             isJump = false
         } else {
-            if(collision.collisionItem == DirectionRect.bottom) {
+            if (collision.collisionItem == DirectionRect.bottom) {
                 isGround = true
                 jumpGravity = 0
             } else if (collision.collisionItem == DirectionRect.top) {
@@ -214,15 +218,15 @@ love.update = (dt: number) => {
             }
         }
     })
-    
-    if(love.keyboard.isDown('w', 'up', 'space')) {
-        if(isGround) {
+
+    if (love.keyboard.isDown('w', 'up', 'space')) {
+        if (isGround) {
             isGround = false
             isJump = true
         }
 
-        if(isJump && !isSlipling){
-            if(Math.abs(jumpGravity) >= speedJump * 0.075) {
+        if (isJump && !isSlipling) {
+            if (Math.abs(jumpGravity) >= speedJump * 0.075) {
                 isJump = false
             } else {
                 jumpGravity -= (speedJump * 0.75) * dt
@@ -232,7 +236,7 @@ love.update = (dt: number) => {
         isJump = false
     }
 
-    if(!isGround) {
+    if (!isGround) {
         jumpGravity += (speedJump * 0.25) * dt
     }
 
@@ -243,7 +247,7 @@ love.update = (dt: number) => {
 love.draw = () => {
     const screenSize = new Vector2(...sizeWindows)
     const printLn = closureCallableGenerator(new ClosurePrintLine(new Vector2(0, 0), 12))
-    
+
     love.graphics.setBackgroundColor(backgroundColor)
 
     love.graphics.translate(-((player.width / 2) + player.x) + (screenSize.x / 2), -((player.height / 2) + player.y) + (screenSize.y / 2))
@@ -254,7 +258,7 @@ love.draw = () => {
     level.forEach((item) => {
         love.graphics.setColor(...item.color)
         love.graphics.rectangle("fill", item.x, item.y, item.width, item.height)
-    }) 
+    })
 
     love.graphics.translate(((player.width / 2) + player.x) - (screenSize.x / 2), ((player.height / 2) + player.y) - (screenSize.y / 2))
     love.graphics.setColor(1, 1, 0)
@@ -263,14 +267,14 @@ love.draw = () => {
     printLn(`Position: [${Math.floor(player.x)}, ${Math.floor(player.y)}]`)
     printLn('Score: ' + score)
 
-    if(isJump) {
+    if (isJump) {
         printLn('Move jump: ' + Math.floor(jumpGravity * -1))
         printLn('Player is jumping')
     } else {
         printLn('Player is in ground')
     }
 
-    if(isSlipling) {
+    if (isSlipling) {
         printLn('Player is sliping')
-    } 
+    }
 }

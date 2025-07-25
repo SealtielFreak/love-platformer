@@ -1,4 +1,4 @@
-import { Vector2 } from "../collision"
+import {Vector2} from "../collision"
 
 export interface ObjectCallable {
     call(...args: any[]): void
@@ -7,14 +7,14 @@ export interface ObjectCallable {
 export const diference = (a: number, b: number): number => Math.abs(b - a)
 
 export function range(a: number, b?: number): number[] {
-    if(typeof b == 'undefined') {
+    if (typeof b == 'undefined') {
         [a, b] = [0, a]
     }
 
     let arr: number[] = []
     const length = diference(a, b)
 
-    for(let i = 0; i < length; i++, a++) {
+    for (let i = 0; i < length; i++, a++) {
         arr[i] = a
     }
 
@@ -24,9 +24,9 @@ export function range(a: number, b?: number): number[] {
 export function printArray<T>(arr: T[]): string {
     let str = '['
 
-    for(let i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) {
         str += `${i}`
-        if(i < arr.length - 1) {
+        if (i < arr.length - 1) {
             str += ', '
         }
     }
@@ -37,17 +37,18 @@ export function printArray<T>(arr: T[]): string {
 }
 
 export class ClosurePrintLine {
-    private _it: number
-    private _step: number
-
-    constructor(private _position: Vector2, step: number = 16, ) {
+    constructor(private _position: Vector2, step: number = 16,) {
         this._it = 0
         this._step = step
     }
 
+    private _it: number
+
     get it(): number {
         return this._it
     }
+
+    private _step: number
 
     get step(): number {
         return this._step
@@ -58,7 +59,7 @@ export class ClosurePrintLine {
     }
 
     call(...args: string[]) {
-        for(let arg of args) {
+        for (let arg of args) {
             love.graphics.print(arg, this._position.x, this._position.y + (this._it * this.step))
             this._it++
         }
