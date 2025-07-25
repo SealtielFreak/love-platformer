@@ -1,3 +1,3 @@
 export interface StringObject {
-    toString(): string 
+    toString(): string;
 }
