@@ -2,8 +2,8 @@
   "name": "platformer-demo",
   "scripts": {
     "clean": "rimraf dist",
-    "watch": "tstl --watch",
-    "build": "tstl",
+    "watch": "yarn clean && tstl --watch",
+    "build": "yarn clean && tstl",
     "love": "love dist"
   },
   "author": "SealtielFreak",
@@ -16,6 +16,7 @@
     "prettier": "3.6.2",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2",
-    "typescript-to-lua": "^1.31.4"
+    "typescript-to-lua": "^1.31.4",
+    "yarn": "^1.22.22"
   }
 }

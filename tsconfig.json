@@ -80,6 +80,6 @@
   ],
   "tstl": {
     "luaTarget": "JIT",
-    "noImplicitSelf": true
+    "noImplicitSelf": true,
   }
 }
