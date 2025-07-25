@@ -1,4 +1,4 @@
-import { Canvas } from 'love.graphics';
+
 import { closureCallableGenerator, ClosurePrintLine } from '@utils/utilities';
 import {
     CollisionSystem,
@@ -8,18 +8,8 @@ import {
     Vector2,
 } from '@/collision';
 import { moveController } from '@/controlls';
-
-function rangeAxis2D(x: number, y: number): number[][] {
-    const arr = [];
-
-    for (let _y = 0; _y < y; _y++) {
-        for (let _x = 0; _x < x; _x++) {
-            arr.push([_x, _y]);
-        }
-    }
-
-    return arr;
-}
+import { rangeAxis2D } from '@utils/generator';
+import { randomColor, createColor } from '@utils/colors';
 
 // 16x16
 const levelMap = [
@@ -36,7 +26,6 @@ const levelMap = [
     1, 1, 1, 1, 1, 1,
 ];
 
-const random = love.math.random;
 const direction: string[] = [];
 
 /* World variables */
@@ -57,31 +46,7 @@ const speedJump = speedGravity * 4;
 let level: Tile[];
 let sizeWindows: [number, number];
 let worldCollisionSystem: CollisionSystem<Tile>;
-const backgroundColor: [number, number, number] = rgbGenerator(92, 164, 240);
-
-const generateCanvas = (inner: () => void) => {
-    const canvas: Canvas = love.graphics.newCanvas();
-
-    love.graphics.setCanvas(canvas);
-    inner();
-    love.graphics.setCanvas();
-
-    return canvas;
-};
-
-const randomColor: () => [number, number, number] = () => [
-    random(255) / 255,
-    random(255) / 255,
-    random(255) / 255,
-];
-
-function rgbGenerator(
-    r: number,
-    g: number,
-    b: number
-): [number, number, number] {
-    return [r / 255, g / 255, b / 255];
-}
+const backgroundColor: [number, number, number] = createColor(92, 164, 240);
 
 class Tile extends Rect {
     public color: [number, number, number];
@@ -134,11 +99,11 @@ love.load = () => {
     );
     level = [];
 
-    colors[1] = rgbGenerator(98, 205, 252);
-    colors[2] = rgbGenerator(101, 217, 230);
-    colors[3] = rgbGenerator(105, 255, 237);
-    colors[4] = rgbGenerator(94, 242, 192);
-    colors[5] = rgbGenerator(114, 110, 255);
+    colors[1] = createColor(98, 205, 252);
+    colors[2] = createColor(101, 217, 230);
+    colors[3] = createColor(105, 255, 237);
+    colors[4] = createColor(94, 242, 192);
+    colors[5] = createColor(114, 110, 255);
 
     rangeAxis2D(16, 16).forEach((v, i) => {
         const id = levelMap[i];
