@@ -9,6 +9,7 @@
   "license": "MIT",
   "devDependencies": {
     "love-typescript-definitions": "^11.5.1",
+    "prettier": "3.6.2",
     "typescript": "^5.8.2",
     "typescript-to-lua": "^1.31.4"
   },

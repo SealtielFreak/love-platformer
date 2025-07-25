@@ -1,24 +1,36 @@
-import {ArithmeticObject} from "./utilities/objects/arithmetic";
-import {ReferenceObject} from "./utilities/objects/reference";
-import {StringObject} from "./utilities/objects/string";
+import { ArithmeticObject } from './utilities/objects/arithmetic';
+import { ReferenceObject } from './utilities/objects/reference';
+import { StringObject } from './utilities/objects/string';
 
 /* Types */
-export type ResponseDictionary = Map<string, <T extends Rect>(goal: Vector2, a: T, b: T) => void>
-export type ResponseFuntion = <T extends Rect>(goal: Vector2, a: T, b: T) => void
-export type FilterFunction = <T extends Rect>(a: T, b: T) => string
+export type ResponseDictionary = Map<
+    string,
+    <T extends Rect>(goal: Vector2, a: T, b: T) => void
+>;
+export type ResponseFuntion = <T extends Rect>(
+    goal: Vector2,
+    a: T,
+    b: T
+) => void;
+export type FilterFunction = <T extends Rect>(a: T, b: T) => string;
 
 export enum DirectionRect {
-    top, bottom, left, right
+    top,
+    bottom,
+    left,
+    right,
 }
 
 /* Response collision list */
 //const touchResponse: ResponseFuntion
-const crossResponse: ResponseFuntion = (goal, a, b) => {
-
-}
+const crossResponse: ResponseFuntion = (goal, a, b) => {};
 
 //const bounceResponse: ResponseFuntion
-const slideResponse: ResponseFuntion = <T extends Rect>(goal: Vector2, a: T, b: T) => {
+const slideResponse: ResponseFuntion = <T extends Rect>(
+    goal: Vector2,
+    a: T,
+    b: T
+) => {
     if (isOverloadRect(a, b)) {
         if (goal.x > 0) {
             a.right = b.left;
@@ -34,88 +46,133 @@ const slideResponse: ResponseFuntion = <T extends Rect>(goal: Vector2, a: T, b: 
             a.top = b.bottom;
         }
     }
-}
+};
 
-const emptyResponse: ResponseFuntion = <T extends Rect>(goal: Vector2, a: T, b: T) => {
+const emptyResponse: ResponseFuntion = <T extends Rect>(
+    goal: Vector2,
+    a: T,
+    b: T
+) => {};
 
-}
-
-let defaultResponseDictionary: ResponseDictionary = new Map()
+let defaultResponseDictionary: ResponseDictionary = new Map();
 
 //defaultResponseDictionary.set('touch', touchResponse)
-defaultResponseDictionary.set('cross', crossResponse)
+defaultResponseDictionary.set('cross', crossResponse);
 //defaultResponseDictionary.set('bounce', bounceResponse)
-defaultResponseDictionary.set('slide', slideResponse)
-defaultResponseDictionary.set('', emptyResponse)
+defaultResponseDictionary.set('slide', slideResponse);
+defaultResponseDictionary.set('', emptyResponse);
 
-const resolveAxisCollisition = <T extends Rect>(responses: ResponseDictionary, goal: Vector2, current: T, others: T[], filter?: FilterFunction): ColisionInformation<T>[] => {
-    let collisions: ColisionInformation<T>[] = []
-    let innerFilter = filter || ((a: T, b: T) => 'slide')
+const resolveAxisCollisition = <T extends Rect>(
+    responses: ResponseDictionary,
+    goal: Vector2,
+    current: T,
+    others: T[],
+    filter?: FilterFunction
+): ColisionInformation<T>[] => {
+    let collisions: ColisionInformation<T>[] = [];
+    let innerFilter = filter || ((a: T, b: T) => 'slide');
 
-    current.move(goal)
+    current.move(goal);
 
     others.forEach((other) => {
         if (isOverloadRect(current, other)) {
-            let nameResponse = innerFilter(current, other)
-            let response = responses.get(nameResponse) || emptyResponse
+            let nameResponse = innerFilter(current, other);
+            let response = responses.get(nameResponse) || emptyResponse;
 
-            let collisionGenerator = new CollisionInformationGenerator(current, other)
+            let collisionGenerator = new CollisionInformationGenerator(
+                current,
+                other
+            );
 
-            collisionGenerator.collisionItem = detectOverloadRect(goal, current, other)
-            collisionGenerator.collisionOther = detectOverloadRect(goal.mul(new Vector2(-1, -1)), other, current)
+            collisionGenerator.collisionItem = detectOverloadRect(
+                goal,
+                current,
+                other
+            );
+            collisionGenerator.collisionOther = detectOverloadRect(
+                goal.mul(new Vector2(-1, -1)),
+                other,
+                current
+            );
 
-            collisionGenerator.response = nameResponse
+            collisionGenerator.response = nameResponse;
 
-            response(goal, current, other)
+            response(goal, current, other);
 
-            collisionGenerator.overlaps = isOverloadRect(current, other)
+            collisionGenerator.overlaps = isOverloadRect(current, other);
 
-            collisions.push(collisionGenerator.generateInformation())
+            collisions.push(collisionGenerator.generateInformation());
         }
-    })
+    });
 
-    return collisions
-}
+    return collisions;
+};
 
 /* Auxiliar functions */
-function resolveCollision<T extends Rect>(responses: ResponseDictionary, goal: Vector2, current: T, others: T[], filter?: FilterFunction): ColisionInformation<T>[] {
-    const [x, y] = [goal.x, goal.y]
-    let collisions: ColisionInformation<T>[] = []
+function resolveCollision<T extends Rect>(
+    responses: ResponseDictionary,
+    goal: Vector2,
+    current: T,
+    others: T[],
+    filter?: FilterFunction
+): ColisionInformation<T>[] {
+    const [x, y] = [goal.x, goal.y];
+    let collisions: ColisionInformation<T>[] = [];
 
-    collisions = collisions.concat(resolveAxisCollisition(responses, new Vector2(...[x, 0]), current, others, filter))
-    collisions = collisions.concat(resolveAxisCollisition(responses, new Vector2(...[0, y]), current, others, filter))
+    collisions = collisions.concat(
+        resolveAxisCollisition(
+            responses,
+            new Vector2(...[x, 0]),
+            current,
+            others,
+            filter
+        )
+    );
+    collisions = collisions.concat(
+        resolveAxisCollisition(
+            responses,
+            new Vector2(...[0, y]),
+            current,
+            others,
+            filter
+        )
+    );
 
-    return collisions
+    return collisions;
 }
 
 const wasVerticallyAligned = (a: Rect, b: Rect): boolean => {
     return a.top < b.bottom && a.bottom > b.top;
-}
+};
 
 const wasHorizontalAligned = (a: Rect, b: Rect): boolean => {
     return a.left < b.right && a.right > b.left;
-}
+};
 
-export function detectOverloadRect(goal: Vector2, a: Rect, b: Rect): DirectionRect | undefined {
-    let direction: DirectionRect | undefined
+export function detectOverloadRect(
+    goal: Vector2,
+    a: Rect,
+    b: Rect
+): DirectionRect | undefined {
+    let direction: DirectionRect | undefined;
 
     if (wasHorizontalAligned(a, b)) {
         if (goal.x > 0) {
-            direction = DirectionRect.right
+            direction = DirectionRect.right;
         } else if (goal.x < 0) {
-            direction = DirectionRect.left
+            direction = DirectionRect.left;
         }
     }
 
     if (wasVerticallyAligned(a, b)) {
         if (goal.y > 0) {
-            direction = DirectionRect.bottom
+            direction = DirectionRect.bottom;
         } else if (goal.y < 0) {
-            direction = DirectionRect.top
+            direction = DirectionRect.top;
         }
     }
 
-    return direction
+    return direction;
 }
 
 export function isOverloadRect(a: Rect, b: Rect): boolean {
@@ -123,92 +180,95 @@ export function isOverloadRect(a: Rect, b: Rect): boolean {
 }
 
 /* Entity classes */
-export class Vector2 implements ReferenceObject<Vector2>, ArithmeticObject, StringObject {
-    constructor(public x: number = 0, public y: number = 0) {
-
-    }
+export class Vector2
+    implements ReferenceObject<Vector2>, ArithmeticObject, StringObject
+{
+    constructor(
+        public x: number = 0,
+        public y: number = 0
+    ) {}
 
     assign(other: Vector2): void {
-        this.x = other.x
-        this.y = other.y
+        this.x = other.x;
+        this.y = other.y;
     }
 
     equals(...others: Vector2[]): boolean {
         for (let other of others) {
             if (this.x == other.x && this.y == other.y) {
-                return true
+                return true;
             }
         }
 
-        return false
+        return false;
     }
 
     add(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y)
+        let result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
-            result.x += other.x
-            result.y += other.y
-        })
+            result.x += other.x;
+            result.y += other.y;
+        });
 
-        return result
+        return result;
     }
 
     sub(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y)
+        let result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
-            result.x -= other.x
-            result.y -= other.y
-        })
+            result.x -= other.x;
+            result.y -= other.y;
+        });
 
-        return result
+        return result;
     }
 
     mul(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y)
+        let result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
-            result.x *= other.x
-            result.y *= other.y
-        })
+            result.x *= other.x;
+            result.y *= other.y;
+        });
 
-        return result
+        return result;
     }
 
     div(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y)
+        let result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
-            result.x /= other.x
-            result.y /= other.y
-        })
+            result.x /= other.x;
+            result.y /= other.y;
+        });
 
-        return result
+        return result;
     }
 
     pow(...others: Vector2[]): Vector2 {
-        let result = new Vector2(this.x, this.y)
+        let result = new Vector2(this.x, this.y);
 
         others.forEach((other) => {
-            result.x = result.x ** other.x
-            result.y = result.y ** other.y
-        })
-        return result
+            result.x = result.x ** other.x;
+            result.y = result.y ** other.y;
+        });
+        return result;
     }
 
     toTuple(): [number, number] {
-        return [this.x, this.y]
+        return [this.x, this.y];
     }
 
     toString() {
-        return `x: ${this.x}, y: ${this.y}`
+        return `x: ${this.x}, y: ${this.y}`;
     }
 }
 
 export class Rect implements ReferenceObject<Rect>, StringObject {
-    private __position: Vector2
-    private __size: Vector2
+    private __position: Vector2;
+    private __size: Vector2;
 
     constructor(position: Vector2, size: Vector2) {
         this.__position = new Vector2(position.x, position.y);
@@ -216,7 +276,7 @@ export class Rect implements ReferenceObject<Rect>, StringObject {
     }
 
     get position(): Vector2 {
-        return this.__position
+        return this.__position;
     }
 
     set position(position: Vector2) {
@@ -224,7 +284,7 @@ export class Rect implements ReferenceObject<Rect>, StringObject {
     }
 
     get size(): Vector2 {
-        return this.__size
+        return this.__size;
     }
 
     set size(size: Vector2) {
@@ -288,56 +348,59 @@ export class Rect implements ReferenceObject<Rect>, StringObject {
     }
 
     assign(other: Rect): void {
-        this.__position = other.__position
-        this.__size = other.__size
+        this.__position = other.__position;
+        this.__size = other.__size;
     }
 
     equals(...others: Rect[]): boolean {
         for (let other of others) {
-            if (this.__position.equals(other.__position) && this.__size.equals(other.__size)) {
+            if (
+                this.__position.equals(other.__position) &&
+                this.__size.equals(other.__size)
+            ) {
                 return true;
             }
         }
 
-        return false
+        return false;
     }
 
     move(position: Vector2) {
-        this.__position.x += position.x
-        this.__position.y += position.y
+        this.__position.x += position.x;
+        this.__position.y += position.y;
     }
 
     toString(): string {
-        return `[x: ${this.x}, y: ${this.y}, w: ${this.width}, h: ${this.height}]`
+        return `[x: ${this.x}, y: ${this.y}, w: ${this.width}, h: ${this.height}]`;
     }
 }
 
-
 /* Collision info */
 class CollisionInformationGenerator<T extends Rect> {
-    private __response: string = ''
-    private __overlaps: boolean = false
-    private __collisionItem: DirectionRect | undefined
-    private __collisionOther: DirectionRect | undefined
+    private __response: string = '';
+    private __overlaps: boolean = false;
+    private __collisionItem: DirectionRect | undefined;
+    private __collisionOther: DirectionRect | undefined;
 
-    constructor(private item: T, private other: T) {
-
-    }
+    constructor(
+        private item: T,
+        private other: T
+    ) {}
 
     set collisionItem(direcction: DirectionRect | undefined) {
-        this.__collisionItem = direcction
+        this.__collisionItem = direcction;
     }
 
     set collisionOther(direcction: DirectionRect | undefined) {
-        this.__collisionOther = direcction
+        this.__collisionOther = direcction;
     }
 
     set response(name: string) {
-        this.__response = name
+        this.__response = name;
     }
 
     set overlaps(overlaps: boolean) {
-        this.__overlaps = overlaps
+        this.__overlaps = overlaps;
     }
 
     generateInformation(): ColisionInformation<T> {
@@ -350,7 +413,7 @@ class CollisionInformationGenerator<T extends Rect> {
 
             collisionItem: this.__collisionItem,
             collisionOther: this.__collisionOther,
-        }
+        };
     }
 }
 
@@ -375,72 +438,83 @@ export interface ColisionInformation<T extends Rect> {
     }
     */
 
-    readonly item: T
-    readonly other: T
+    readonly item: T;
+    readonly other: T;
 
-    readonly response: string
-    readonly overlaps: boolean
+    readonly response: string;
+    readonly overlaps: boolean;
 
     // readonly lastPosition: Vector2
     // readonly recentPosition: Vector2
     // readonly lastMove: Vector2
 
-    readonly collisionItem: DirectionRect | undefined
-    readonly collisionOther: DirectionRect | undefined
+    readonly collisionItem: DirectionRect | undefined;
+    readonly collisionOther: DirectionRect | undefined;
 }
 
 /* SystemCollisions classes */
 export interface CollisionSystem<T extends Rect> {
-    clear(): void
+    clear(): void;
 
-    add(item: T): void
+    add(item: T): void;
 
-    remove(item: T): void
+    remove(item: T): void;
 
-    move(move: Vector2, current: Rect, filter?: FilterFunction): [Vector2, ColisionInformation<T>[]]
+    move(
+        move: Vector2,
+        current: Rect,
+        filter?: FilterFunction
+    ): [Vector2, ColisionInformation<T>[]];
 
-    setResponse(name: string, response: ResponseFuntion): void
+    setResponse(name: string, response: ResponseFuntion): void;
 
-    get items(): T[]
+    get items(): T[];
 }
 
 export class LinearCollision<T extends Rect> implements CollisionSystem<T> {
-    protected __items: Set<T>
-    protected __responses: ResponseDictionary
+    protected __items: Set<T>;
+    protected __responses: ResponseDictionary;
 
     constructor() {
-        this.__items = new Set()
-        this.__responses = new Map(defaultResponseDictionary)
+        this.__items = new Set();
+        this.__responses = new Map(defaultResponseDictionary);
     }
 
     get items(): T[] {
-        return [...this.__items.values()]
+        return [...this.__items.values()];
     }
 
     clear() {
-        this.__items.clear()
+        this.__items.clear();
     }
 
     add(item: T) {
-        this.__items.add(item)
+        this.__items.add(item);
     }
 
     remove(item: T) {
-        this.__items.delete(item)
+        this.__items.delete(item);
     }
 
-    move(move: Vector2, current: T, filter?: FilterFunction): [Vector2, ColisionInformation<T>[]] {
-        let rect = new Rect(current.position, current.size)
-        let collisions = resolveCollision(this.__responses, move, rect, this.items, filter)
+    move(
+        move: Vector2,
+        current: T,
+        filter?: FilterFunction
+    ): [Vector2, ColisionInformation<T>[]] {
+        let rect = new Rect(current.position, current.size);
+        let collisions = resolveCollision(
+            this.__responses,
+            move,
+            rect,
+            this.items,
+            filter
+        );
 
-        return [
-            rect.position,
-            collisions as ColisionInformation<T>[]
-        ]
+        return [rect.position, collisions as ColisionInformation<T>[]];
     }
 
     setResponse(name: string, response: ResponseFuntion) {
-        this.__responses.set(name, response)
+        this.__responses.set(name, response);
     }
 }
 
