@@ -1,6 +1,6 @@
-import { ArithmeticObject } from './utilities/objects/arithmetic';
-import { ReferenceObject } from './utilities/objects/reference';
-import { StringObject } from './utilities/objects/string';
+import { ArithmeticObject } from '@/utils/objects/arithmetic';
+import { ReferenceObject } from '@/utils/objects/reference';
+import { StringObject } from '@/utils/objects/string';
 
 /* Types */
 export type ResponseDictionary = Map<
