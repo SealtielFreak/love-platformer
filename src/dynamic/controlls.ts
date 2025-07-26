@@ -1,4 +1,6 @@
-import { DirectionRect, Vector2 } from '@/collision';
+import { CollisionSystem, DirectionRect, Rect, Vector2 } from '@/collision';
+import { Tile } from '@/dynamic/tile';
+import { print } from 'love.graphics';
 
 export function moveController(
     dt: number = 1,
@@ -36,39 +38,49 @@ export function jumpController(dt: number = 1, speed: number = 1): Vector2 {
     return jump;
 }
 
-class Player extends Rect {
+export class Player extends Rect {
     public color: [number, number, number];
-    public readonly isGravity: boolean;
-    public readonly isJump: boolean;
-    public readonly isSliping: boolean;
-    private readonly moveSpeed: number;
+    public isGravity: boolean;
+    public isJump: boolean;
+    public isGround: boolean;
+    public isSlipping: boolean;
+    public moveSpeed: number;
+    public jumpGravity: number;
+    public score: number;
+    public speedJump: number;
 
     constructor(position: Vector2, size: Vector2) {
         super(position, size);
+
+        const speedGravity = 2000;
 
         this.color = [1, 1 / 2, 0];
         this.moveSpeed = 250;
         this.isGravity = false;
         this.isJump = false;
-        this.isSliping = false;
+        this.isGround = false;
+        this.isSlipping = false;
+        this.jumpGravity = 0;
+        this.score = 0;
+        this.speedJump = speedGravity * 4;
     }
 }
 
-export function updateControll(player: Player) {
-    let move = new Vector2();
-
-    move = move.add(moveController(dt, moveSpeed, [1, 0]));
-
-    if (player.y > sizeWindows[1]) {
+export function updateController(
+    dt: number,
+    player: Player,
+    move: Vector2,
+    worldCollisionSystem: CollisionSystem<Tile>,
+    size: [number, number],
+    level: Tile[]
+) {
+    if (player.y > size[1]) {
         player.position.assign(
-            new Vector2(
-                sizeWindows[0] / 2,
-                player.y % (sizeWindows[1] + player.height)
-            )
+            new Vector2(size[0] / 2, player.y % (size[1] + player.height))
         );
     }
 
-    move.y += jumpGravity * dt;
+    move.y += player.jumpGravity * dt;
 
     const [movePlayer, collisions] = worldCollisionSystem.move(
         move,
@@ -82,8 +94,8 @@ export function updateControll(player: Player) {
         }
     );
 
-    isGround = false;
-    isSlipling = false;
+    player.isGround = false;
+    player.isSlipping = false;
 
     collisions.forEach((collision) => {
         const item = collision.other;
@@ -94,7 +106,7 @@ export function updateControll(player: Player) {
             if (index > -1) {
                 level.splice(index, 1);
                 worldCollisionSystem.remove(item);
-                score++;
+                player.score++;
             }
 
             return;
@@ -104,40 +116,40 @@ export function updateControll(player: Player) {
                 collision.collisionItem as DirectionRect
             )
         ) {
-            jumpGravity *= 0.25;
-            isSlipling = true;
-            isGround = true;
-            isJump = false;
+            player.jumpGravity *= 0.25;
+            player.isSlipping = true;
+            player.isGround = true;
+            player.isJump = false;
         } else {
             if (collision.collisionItem == DirectionRect.bottom) {
-                isGround = true;
-                jumpGravity = 0;
+                player.isGround = true;
+                player.jumpGravity = 0;
             } else if (collision.collisionItem == DirectionRect.top) {
-                isJump = false;
-                jumpGravity = 0;
+                player.isJump = false;
+                player.jumpGravity = 0;
             }
         }
     });
 
     if (love.keyboard.isDown('w', 'up', 'space')) {
-        if (isGround) {
-            isGround = false;
-            isJump = true;
+        if (player.isGround) {
+            player.isGround = false;
+            player.isJump = true;
         }
 
-        if (isJump && !isSlipling) {
-            if (Math.abs(jumpGravity) >= speedJump * 0.075) {
-                isJump = false;
+        if (player.isJump && !player.isSlipping) {
+            if (Math.abs(player.jumpGravity) >= player.speedJump * 0.075) {
+                player.isJump = false;
             } else {
-                jumpGravity -= speedJump * 0.75 * dt;
+                player.jumpGravity -= player.speedJump * 0.75 * dt;
             }
         }
     } else {
-        isJump = false;
+        player.isJump = false;
     }
 
-    if (!isGround) {
-        jumpGravity += speedJump * 0.25 * dt;
+    if (!player.isGround) {
+        player.jumpGravity += player.speedJump * 0.25 * dt;
     }
 
     player.position = movePlayer;

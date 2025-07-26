@@ -6,9 +6,10 @@ import {
     Rect,
     Vector2,
 } from '@/collision';
-import { moveController } from '@/player/controlls';
 import { rangeAxis2D } from '@utils/generator';
 import { createColor, randomColor } from '@utils/colors';
+import { Tile } from '@/dynamic/tile';
+import { moveController, Player, updateController } from '@/dynamic/controlls';
 
 // 16x16
 const levelMap = [
@@ -29,44 +30,16 @@ const direction: string[] = [];
 
 /* World variables */
 const speedGravity = 2000;
+const moveSpeed = 250;
 
 /* Player variables */
 let player: Player;
-let jumpGravity = speedGravity;
-let score = 0;
-const moveSpeed = 250;
-let isGround = false;
-let isJump = false;
-let isSlipling = false;
-
-const speedJump = speedGravity * 4;
 
 /* Game variables */
 let level: Tile[];
 let sizeWindows: [number, number];
 let worldCollisionSystem: CollisionSystem<Tile>;
 const backgroundColor: [number, number, number] = createColor(92, 164, 240);
-
-class Tile extends Rect {
-    public color: [number, number, number];
-    public readonly id: number;
-
-    constructor(
-        position: Vector2,
-        size: Vector2,
-        id: number,
-        color?: [number, number, number]
-    ) {
-        super(position, size);
-
-        if (typeof color == 'undefined') {
-            color = randomColor();
-        }
-
-        this.color = color;
-        this.id = id;
-    }
-}
 
 love.load = () => {
     const size = love.window.getMode();
@@ -79,6 +52,9 @@ love.load = () => {
         new Vector2(24, 48)
     );
     level = [];
+
+    player.jumpGravity = speedGravity;
+    player.moveSpeed = moveSpeed;
 
     colors[1] = createColor(98, 205, 252);
     colors[2] = createColor(101, 217, 230);
@@ -111,91 +87,16 @@ love.load = () => {
 
 love.update = (dt: number) => {
     let move = new Vector2();
-
     move = move.add(moveController(dt, moveSpeed, [1, 0]));
 
-    if (player.y > sizeWindows[1]) {
-        player.position.assign(
-            new Vector2(
-                sizeWindows[0] / 2,
-                player.y % (sizeWindows[1] + player.height)
-            )
-        );
-    }
-
-    move.y += jumpGravity * dt;
-
-    const [movePlayer, collisions] = worldCollisionSystem.move(
-        move,
+    player = updateController(
+        dt,
         player,
-        (a: any, b: any) => {
-            if ((b as Tile).id == 3) {
-                return 'cross';
-            }
-
-            return 'slide';
-        }
+        move,
+        worldCollisionSystem,
+        sizeWindows,
+        level
     );
-
-    isGround = false;
-    isSlipling = false;
-
-    collisions.forEach((collision) => {
-        const item = collision.other;
-
-        if (item.id == 3) {
-            const index = level.indexOf(item);
-
-            if (index > -1) {
-                level.splice(index, 1);
-                worldCollisionSystem.remove(item);
-                score++;
-            }
-
-            return;
-        } else if (
-            item.id == 4 &&
-            [DirectionRect.left, DirectionRect.right].includes(
-                collision.collisionItem as DirectionRect
-            )
-        ) {
-            jumpGravity *= 0.25;
-            isSlipling = true;
-            isGround = true;
-            isJump = false;
-        } else {
-            if (collision.collisionItem == DirectionRect.bottom) {
-                isGround = true;
-                jumpGravity = 0;
-            } else if (collision.collisionItem == DirectionRect.top) {
-                isJump = false;
-                jumpGravity = 0;
-            }
-        }
-    });
-
-    if (love.keyboard.isDown('w', 'up', 'space')) {
-        if (isGround) {
-            isGround = false;
-            isJump = true;
-        }
-
-        if (isJump && !isSlipling) {
-            if (Math.abs(jumpGravity) >= speedJump * 0.075) {
-                isJump = false;
-            } else {
-                jumpGravity -= speedJump * 0.75 * dt;
-            }
-        }
-    } else {
-        isJump = false;
-    }
-
-    if (!isGround) {
-        jumpGravity += speedJump * 0.25 * dt;
-    }
-
-    player.position = movePlayer;
 };
 
 love.draw = () => {
@@ -211,7 +112,9 @@ love.draw = () => {
         -(player.height / 2 + player.y) + screenSize.y / 2
     );
 
-    love.graphics.setColor(...player.color);
+    const [r, g, b] = player.color;
+
+    love.graphics.setColor(r, g, b);
     love.graphics.rectangle(
         'fill',
         player.x,
@@ -239,16 +142,16 @@ love.draw = () => {
 
     printLn('FPS: ' + love.timer.getFPS());
     printLn(`Position: [${Math.floor(player.x)}, ${Math.floor(player.y)}]`);
-    printLn('Score: ' + score);
+    printLn('Score: ' + player.score);
 
-    if (isJump) {
-        printLn('Move jump: ' + Math.floor(jumpGravity * -1));
+    if (player.isJump) {
+        printLn('Move jump: ' + Math.floor(player.jumpGravity * -1));
         printLn('Player is jumping');
     } else {
         printLn('Player is in ground');
     }
 
-    if (isSlipling) {
+    if (player.isSlipping) {
         printLn('Player is sliping');
     }
 };
