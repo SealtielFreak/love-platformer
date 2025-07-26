@@ -1,4 +1,3 @@
-
 import { closureCallableGenerator, ClosurePrintLine } from '@utils/utilities';
 import {
     CollisionSystem,
@@ -9,7 +8,7 @@ import {
 } from '@/collision';
 import { moveController } from '@/controlls';
 import { rangeAxis2D } from '@utils/generator';
-import { randomColor, createColor } from '@utils/colors';
+import { createColor, randomColor } from '@utils/colors';
 
 // 16x16
 const levelMap = [
