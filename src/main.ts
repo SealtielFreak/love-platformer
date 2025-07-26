@@ -10,6 +10,8 @@ import { rangeAxis2D } from '@utils/generator';
 import { createColor, randomColor } from '@utils/colors';
 import { Tile } from '@/dynamic/tile';
 import { moveController, Player, updateController } from '@/dynamic/controlls';
+import RGB from '@/types/color';
+import Color from '@/types/color';
 
 // 16x16
 const levelMap = [
@@ -29,8 +31,9 @@ const levelMap = [
 const direction: string[] = [];
 
 /* World variables */
-const speedGravity = 2000;
-const moveSpeed = 250;
+const defaultColor: RGB = [1, 1 / 2, 0];
+const defaultSpeedGravity = 2000;
+const defaultMoveSpeed = 250;
 
 /* Player variables */
 let player: Player;
@@ -43,18 +46,21 @@ const backgroundColor: [number, number, number] = createColor(92, 164, 240);
 
 love.load = () => {
     const size = love.window.getMode();
-    const colors: Array<[number, number, number]> = [];
+    const colors: Array<Color> = [];
 
+    level = [];
     sizeWindows = [size[0], size[1]];
     worldCollisionSystem = new LinearCollision<Tile>();
     player = new Player(
         new Vector2(sizeWindows[0] / 2, 0),
-        new Vector2(24, 48)
+        new Vector2(24, 48),
+        defaultSpeedGravity,
+        defaultMoveSpeed,
+        defaultColor
     );
-    level = [];
 
-    player.jumpGravity = speedGravity;
-    player.moveSpeed = moveSpeed;
+    player.jumpGravity = defaultSpeedGravity;
+    player.moveSpeed = defaultMoveSpeed;
 
     colors[1] = createColor(98, 205, 252);
     colors[2] = createColor(101, 217, 230);
@@ -79,15 +85,17 @@ love.load = () => {
 
     level.forEach((item) => worldCollisionSystem.add(item));
 
+    /*
     direction[DirectionRect.bottom] = 'Bottom';
     direction[DirectionRect.top] = 'Top';
     direction[DirectionRect.left] = 'Left';
     direction[DirectionRect.right] = 'Right';
+    */
 };
 
 love.update = (dt: number) => {
     let move = new Vector2();
-    move = move.add(moveController(dt, moveSpeed, [1, 0]));
+    move = move.add(moveController(dt, defaultMoveSpeed, [1, 0]));
 
     player = updateController(
         dt,

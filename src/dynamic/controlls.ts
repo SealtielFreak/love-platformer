@@ -1,6 +1,6 @@
 import { CollisionSystem, DirectionRect, Rect, Vector2 } from '@/collision';
 import { Tile } from '@/dynamic/tile';
-import { print } from 'love.graphics';
+import RGB from '@/types/color';
 
 export function moveController(
     dt: number = 1,
@@ -39,7 +39,7 @@ export function jumpController(dt: number = 1, speed: number = 1): Vector2 {
 }
 
 export class Player extends Rect {
-    public color: [number, number, number];
+    public color: RGB;
     public isGravity: boolean;
     public isJump: boolean;
     public isGround: boolean;
@@ -49,13 +49,17 @@ export class Player extends Rect {
     public score: number;
     public speedJump: number;
 
-    constructor(position: Vector2, size: Vector2) {
+    constructor(
+        position: Vector2,
+        size: Vector2,
+        speedGravity: number,
+        moveSpeed: number,
+        color: RGB
+    ) {
         super(position, size);
 
-        const speedGravity = 2000;
-
-        this.color = [1, 1 / 2, 0];
-        this.moveSpeed = 250;
+        this.color = color;
+        this.moveSpeed = moveSpeed;
         this.isGravity = false;
         this.isJump = false;
         this.isGround = false;
