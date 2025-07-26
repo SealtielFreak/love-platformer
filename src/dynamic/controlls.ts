@@ -1,28 +1,60 @@
-import { CollisionSystem, DirectionRect, Rect, Vector2 } from '@/collision';
+import { CollisionSystem, DirectionRect, Vector2 } from '@/collision';
 import { Tile } from '@/dynamic/tile';
-import RGB from '@/types/color';
+import DynamicEntity from '@/dynamic/entities/DynamicEntity';
+import PrimitiveVector2 from '@/types/vector2';
+
+type DirectionState = 'left' | 'right' | 'nothing';
+
+interface Input {
+    readonly Id: number;
+    readonly direction: DirectionState;
+    readonly jumping: boolean;
+}
+
+export function readInputControl(): Input {
+    let direction: DirectionState = 'nothing';
+    let jumping: boolean = false;
+
+    if (love.keyboard.isDown('left', 'a')) {
+        direction = 'left';
+    } else if (love.keyboard.isDown('right', 'd')) {
+        direction = 'right';
+    }
+
+    if (love.keyboard.isDown('up', 'w', 'space')) {
+        jumping = true;
+    } else if (love.keyboard.isDown('down', 's')) {
+        // TO DO
+    }
+
+    return {
+        Id: 0,
+        direction: direction,
+        jumping: jumping,
+    };
+}
 
 export function moveController(
     dt: number = 1,
     speed: number = 1,
-    dir: [number, number] = [1, 1]
+    dir: PrimitiveVector2 = [1, 1]
 ): Vector2 {
     const move = new Vector2();
-    speed *= dt;
+    const deltaSpeed = speed * dt;
 
     if (dir[0] != 0) {
         if (love.keyboard.isDown('left', 'a')) {
-            move.x -= 1 * speed;
+            move.x -= deltaSpeed;
         } else if (love.keyboard.isDown('right', 'd')) {
-            move.x += 1 * speed;
+            move.x += deltaSpeed;
         }
     }
 
     if (dir[1] != 0) {
-        if (love.keyboard.isDown('up', 'w')) {
-            move.y -= 1 * speed;
+        if (love.keyboard.isDown('up', 'w', 'space')) {
+            // move.y -= deltaSpeed;
         } else if (love.keyboard.isDown('down', 's')) {
-            move.y += 1 * speed;
+            // move.y += speedDelta;
         }
     }
 
@@ -38,44 +70,12 @@ export function jumpController(dt: number = 1, speed: number = 1): Vector2 {
     return jump;
 }
 
-export class Player extends Rect {
-    public color: RGB;
-    public isGravity: boolean;
-    public isJump: boolean;
-    public isGround: boolean;
-    public isSlipping: boolean;
-    public moveSpeed: number;
-    public jumpGravity: number;
-    public score: number;
-    public speedJump: number;
-
-    constructor(
-        position: Vector2,
-        size: Vector2,
-        speedGravity: number,
-        moveSpeed: number,
-        color: RGB
-    ) {
-        super(position, size);
-
-        this.color = color;
-        this.moveSpeed = moveSpeed;
-        this.isGravity = false;
-        this.isJump = false;
-        this.isGround = false;
-        this.isSlipping = false;
-        this.jumpGravity = 0;
-        this.score = 0;
-        this.speedJump = speedGravity * 4;
-    }
-}
-
 export function updateController(
     dt: number,
-    player: Player,
+    player: DynamicEntity,
     move: Vector2,
     worldCollisionSystem: CollisionSystem<Tile>,
-    size: [number, number],
+    size: PrimitiveVector2,
     level: Tile[]
 ) {
     if (player.y > size[1]) {
@@ -135,7 +135,7 @@ export function updateController(
         }
     });
 
-    if (love.keyboard.isDown('w', 'up', 'space')) {
+    if (love.keyboard.isDown('up', 'w', 'space')) {
         if (player.isGround) {
             player.isGround = false;
             player.isJump = true;

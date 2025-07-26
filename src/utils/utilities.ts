@@ -26,6 +26,7 @@ export function printArray<T>(arr: T[]): string {
 
     for (let i = 0; i < arr.length; i++) {
         str += `${i}`;
+
         if (i < arr.length - 1) {
             str += ', ';
         }
@@ -36,56 +37,53 @@ export function printArray<T>(arr: T[]): string {
     return str;
 }
 
-export class ClosurePrintLine {
+export class PrintLineGenerator {
     constructor(
-        private _position: Vector2,
+        private position: Vector2,
         step: number = 16
     ) {
-        this._it = 0;
-        this._step = step;
+        this.n = 0;
+        this.step = step;
     }
 
-    private _it: number;
+    private n: number;
 
     get it(): number {
-        return this._it;
+        return this.n;
     }
 
-    private _step: number;
-
-    get step(): number {
-        return this._step;
-    }
+    private readonly step: number;
 
     reset(): void {
-        this._it = 0;
+        this.n = 0;
     }
 
     call(...args: string[]) {
         for (const arg of args) {
             love.graphics.print(
                 arg,
-                this._position.x,
-                this._position.y + this._it * this.step
+                this.position.x,
+                this.position.y + this.n * this.step
             );
-            this._it++;
+
+            this.n++;
         }
     }
 }
 
-export function closureCallableGenerator<T extends ObjectCallable>(obj: T) {
+export function CreateClosureCallable<T extends ObjectCallable>(obj: T) {
     /** @noSelf **/
     return (...args: any[]) => {
         obj.call(...args);
     };
 }
 
-export function stepClosure(callbackfn: (i: number) => any): () => void {
+export function stepClosure<T>(callBackFunction: (i: number) => T): () => void {
     let i: number = 0;
 
     /** @noSelf **/
     return () => {
         i++;
-        callbackfn(i);
+        callBackFunction(i);
     };
 }
