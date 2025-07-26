@@ -6,7 +6,7 @@ import {
     Rect,
     Vector2,
 } from '@/collision';
-import { moveController } from '@/controlls';
+import { moveController } from '@/player/controlls';
 import { rangeAxis2D } from '@utils/generator';
 import { createColor, randomColor } from '@utils/colors';
 
@@ -65,24 +65,6 @@ class Tile extends Rect {
 
         this.color = color;
         this.id = id;
-    }
-}
-
-class Player extends Rect {
-    public color: [number, number, number];
-    public readonly isGravity: boolean;
-    public readonly isJump: boolean;
-    public readonly isSliping: boolean;
-    private readonly moveSpeed: number;
-
-    constructor(position: Vector2, size: Vector2) {
-        super(position, size);
-
-        this.color = [1, 1 / 2, 0];
-        this.moveSpeed = 250;
-        this.isGravity = false;
-        this.isJump = false;
-        this.isSliping = false;
     }
 }
 
