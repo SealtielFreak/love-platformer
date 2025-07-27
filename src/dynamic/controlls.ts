@@ -1,24 +1,22 @@
-import { CollisionSystem, DirectionRect, Vector2 } from '@/collision';
+import { CollisionSystem, DirectionRect, Rect, Vector2 } from '@/collision';
 import { Tile } from '@/dynamic/tile';
 import DynamicEntity from '@/dynamic/entities/DynamicEntity';
 import PrimitiveVector2 from '@/types/vector2';
 
-type DirectionState = 'left' | 'right' | 'nothing';
-
 interface Input {
-    readonly Id: number;
-    readonly direction: DirectionState;
+    readonly id: number;
+    readonly direction: number;
     readonly jumping: boolean;
 }
 
 export function readInputControl(): Input {
-    let direction: DirectionState = 'nothing';
-    let jumping: boolean = false;
+    let direction = 0;
+    let jumping = false;
 
     if (love.keyboard.isDown('left', 'a')) {
-        direction = 'left';
+        direction = -1;
     } else if (love.keyboard.isDown('right', 'd')) {
-        direction = 'right';
+        direction = 1;
     }
 
     if (love.keyboard.isDown('up', 'w', 'space')) {
@@ -28,13 +26,13 @@ export function readInputControl(): Input {
     }
 
     return {
-        Id: 0,
+        id: 0,
         direction: direction,
         jumping: jumping,
     };
 }
 
-export function moveController(
+export function moveEntity(
     dt: number = 1,
     speed: number = 1,
     dir: PrimitiveVector2 = [1, 1]
@@ -51,8 +49,8 @@ export function moveController(
     }
 
     if (dir[1] != 0) {
-        if (love.keyboard.isDown('up', 'w', 'space')) {
-            // move.y -= deltaSpeed;
+        if (love.keyboard.isDown('up', 'w')) {
+            move.y -= deltaSpeed;
         } else if (love.keyboard.isDown('down', 's')) {
             // move.y += speedDelta;
         }
@@ -61,35 +59,26 @@ export function moveController(
     return move;
 }
 
-export function jumpController(dt: number = 1, speed: number = 1): Vector2 {
-    const jump = new Vector2();
-
-    if (love.keyboard.isDown('space', 'w')) {
-    }
-
-    return jump;
-}
-
-export function updateController(
+export function updateEntityFromWorld(
     dt: number,
-    player: DynamicEntity,
+    entity: DynamicEntity,
     move: Vector2,
     worldCollisionSystem: CollisionSystem<Tile>,
     size: PrimitiveVector2,
     level: Tile[]
 ) {
-    if (player.y > size[1]) {
-        player.position.assign(
-            new Vector2(size[0] / 2, player.y % (size[1] + player.height))
+    if (entity.y > size[1]) {
+        entity.position.assign(
+            new Vector2(size[0] / 2, entity.y % (size[1] + entity.height))
         );
     }
 
-    move.y += player.jumpGravity * dt;
+    move.y += entity.jumpGravity * dt;
 
     const [movePlayer, collisions] = worldCollisionSystem.move(
         move,
-        player,
-        (a: any, b: any) => {
+        entity,
+        <T>(a: T, b: T) => {
             if ((b as Tile).id == 3) {
                 return 'cross';
             }
@@ -98,8 +87,8 @@ export function updateController(
         }
     );
 
-    player.isGround = false;
-    player.isSlipping = false;
+    entity.isGround = false;
+    entity.isSlipping = false;
 
     collisions.forEach((collision) => {
         const item = collision.other;
@@ -110,7 +99,7 @@ export function updateController(
             if (index > -1) {
                 level.splice(index, 1);
                 worldCollisionSystem.remove(item);
-                player.score++;
+                entity.score++;
             }
 
             return;
@@ -120,43 +109,43 @@ export function updateController(
                 collision.collisionItem as DirectionRect
             )
         ) {
-            player.jumpGravity *= 0.25;
-            player.isSlipping = true;
-            player.isGround = true;
-            player.isJump = false;
+            entity.jumpGravity *= 0.25;
+            entity.isSlipping = true;
+            entity.isGround = true;
+            entity.isJump = false;
         } else {
             if (collision.collisionItem == DirectionRect.bottom) {
-                player.isGround = true;
-                player.jumpGravity = 0;
+                entity.isGround = true;
+                entity.jumpGravity = 0;
             } else if (collision.collisionItem == DirectionRect.top) {
-                player.isJump = false;
-                player.jumpGravity = 0;
+                entity.isJump = false;
+                entity.jumpGravity = 0;
             }
         }
     });
 
     if (love.keyboard.isDown('up', 'w', 'space')) {
-        if (player.isGround) {
-            player.isGround = false;
-            player.isJump = true;
+        if (entity.isGround) {
+            entity.isGround = false;
+            entity.isJump = true;
         }
 
-        if (player.isJump && !player.isSlipping) {
-            if (Math.abs(player.jumpGravity) >= player.speedJump * 0.075) {
-                player.isJump = false;
+        if (entity.isJump && !entity.isSlipping) {
+            if (Math.abs(entity.jumpGravity) >= entity.speedJump * 0.075) {
+                entity.isJump = false;
             } else {
-                player.jumpGravity -= player.speedJump * 0.75 * dt;
+                entity.jumpGravity -= entity.speedJump * 0.75 * dt;
             }
         }
     } else {
-        player.isJump = false;
+        entity.isJump = false;
     }
 
-    if (!player.isGround) {
-        player.jumpGravity += player.speedJump * 0.25 * dt;
+    if (!entity.isGround) {
+        entity.jumpGravity += entity.speedJump * 0.25 * dt;
     }
 
-    player.position = movePlayer;
+    entity.position = movePlayer;
 
-    return player;
+    return entity;
 }

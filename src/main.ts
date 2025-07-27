@@ -3,7 +3,7 @@ import { CollisionSystem, LinearCollision, Vector2 } from '@/collision';
 import { rangeAxis2D } from '@utils/generator';
 import { createColor } from '@utils/colors';
 import { Tile } from '@/dynamic/tile';
-import { moveController, updateController } from '@/dynamic/controlls';
+import { moveEntity, updateEntityFromWorld } from '@/dynamic/controlls';
 import RGB from '@/types/color';
 import Color from '@/types/color';
 import DynamicEntity from '@/dynamic/entities/DynamicEntity';
@@ -86,9 +86,9 @@ love.load = () => {
 
 love.update = (dt: number) => {
     let move = new Vector2();
-    move = move.add(moveController(dt, defaultMoveSpeed, [1, 1]));
+    move = move.add(moveEntity(dt, defaultMoveSpeed, [1, 1]));
 
-    player = updateController(
+    player = updateEntityFromWorld(
         dt,
         player,
         move,
