@@ -3,7 +3,11 @@ import { CollisionSystem, LinearCollision, Vector2 } from '@/collision';
 import { rangeAxis2D } from '@utils/generator';
 import { createColor } from '@utils/colors';
 import { Tile } from '@/dynamic/tile';
-import { moveEntity, updateEntityFromWorld } from '@/dynamic/controlls';
+import {
+    updateEntity,
+    readInputControl,
+    processEntityFromWorld,
+} from '@/dynamic/update';
 import RGB from '@/types/color';
 import Color from '@/types/color';
 import DynamicEntity from '@/dynamic/entities/DynamicEntity';
@@ -23,12 +27,11 @@ const levelMap = [
     1, 1, 1, 1, 1, 1,
 ];
 
-const direction: string[] = [];
-
 /* World variables */
 const defaultColor: RGB = [1, 1 / 2, 0];
 const defaultSpeedGravity = 2000;
-const defaultMoveSpeed = 250;
+const defaultMoveSpeed = 100;
+const defaultDeceleration: Vector2 = new Vector2(0.7);
 
 /* Player variables */
 let player: DynamicEntity;
@@ -43,6 +46,8 @@ const backgroundColor: [number, number, number] = createColor(92, 164, 240);
 let moving = new Vector2();
 
 love.load = () => {
+    love.window.setVSync(1);
+
     const size = love.window.getMode();
     const colors: Array<Color> = [];
 
@@ -85,19 +90,30 @@ love.load = () => {
 };
 
 love.update = (dt: number) => {
-    let move = new Vector2();
-    move = move.add(moveEntity(dt, defaultMoveSpeed, [1, 1]));
+    const input = readInputControl();
 
-    player = updateEntityFromWorld(
+    moving = updateEntity(
+        dt,
+        defaultMoveSpeed,
+        moving.mul(defaultDeceleration),
+        input
+    );
+
+    if (moving.x >= 7) {
+        moving.x = 7;
+    } else if (moving.x <= -7) {
+        moving.x = -7;
+    }
+
+    player = processEntityFromWorld(
         dt,
         player,
-        move,
+        moving,
+        input,
         worldCollisionSystem,
         sizeWindows,
         level
     );
-
-    moving = move;
 };
 
 love.draw = () => {
@@ -157,5 +173,5 @@ love.draw = () => {
         printLn('Player is sliping');
     }
 
-    printLn(`Moving: [${Math.floor(moving.x)}, ${Math.floor(moving.y)}]`);
+    printLn(`Moving: [${Math.ceil(moving.x)}, ${Math.ceil(moving.y)}]`);
 };

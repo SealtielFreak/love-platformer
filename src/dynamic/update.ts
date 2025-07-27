@@ -1,4 +1,4 @@
-import { CollisionSystem, DirectionRect, Rect, Vector2 } from '@/collision';
+import { CollisionSystem, DirectionRect, Vector2 } from '@/collision';
 import { Tile } from '@/dynamic/tile';
 import DynamicEntity from '@/dynamic/entities/DynamicEntity';
 import PrimitiveVector2 from '@/types/vector2';
@@ -7,11 +7,15 @@ interface Input {
     readonly id: number;
     readonly direction: number;
     readonly jumping: boolean;
+    readonly running: boolean;
+    readonly scratch: boolean;
 }
 
 export function readInputControl(): Input {
     let direction = 0;
     let jumping = false;
+    let running = false;
+    let scratch = false;
 
     if (love.keyboard.isDown('left', 'a')) {
         direction = -1;
@@ -22,25 +26,31 @@ export function readInputControl(): Input {
     if (love.keyboard.isDown('up', 'w', 'space')) {
         jumping = true;
     } else if (love.keyboard.isDown('down', 's')) {
-        // TO DO
+        scratch = true;
+    }
+
+    if (love.keyboard.isDown('lshift', 'z')) {
+        running = true;
     }
 
     return {
         id: 0,
         direction: direction,
         jumping: jumping,
+        running: running,
+        scratch: scratch,
     };
 }
 
-export function moveEntity(
+export function controlEntity(
     dt: number = 1,
     speed: number = 1,
-    dir: PrimitiveVector2 = [1, 1]
+    directionEnabled: PrimitiveVector2 = [1, 1]
 ): Vector2 {
     const move = new Vector2();
     const deltaSpeed = speed * dt;
 
-    if (dir[0] != 0) {
+    if (directionEnabled[0] != 0) {
         if (love.keyboard.isDown('left', 'a')) {
             move.x -= deltaSpeed;
         } else if (love.keyboard.isDown('right', 'd')) {
@@ -48,21 +58,37 @@ export function moveEntity(
         }
     }
 
-    if (dir[1] != 0) {
+    if (directionEnabled[1] != 0) {
         if (love.keyboard.isDown('up', 'w')) {
             move.y -= deltaSpeed;
-        } else if (love.keyboard.isDown('down', 's')) {
-            // move.y += speedDelta;
         }
     }
 
     return move;
 }
 
-export function updateEntityFromWorld(
+export function updateEntity(
+    dt: number = 1,
+    speed: number = 1,
+    move: Vector2,
+    input: Input
+): Vector2 {
+    const deltaSpeed = speed * dt;
+
+    if (input.direction < 0) {
+        move.x -= deltaSpeed;
+    } else if (input.direction > 0) {
+        move.x += deltaSpeed;
+    }
+
+    return move;
+}
+
+export function processEntityFromWorld(
     dt: number,
     entity: DynamicEntity,
     move: Vector2,
+    input: Input,
     worldCollisionSystem: CollisionSystem<Tile>,
     size: PrimitiveVector2,
     level: Tile[]
@@ -124,7 +150,7 @@ export function updateEntityFromWorld(
         }
     });
 
-    if (love.keyboard.isDown('up', 'w', 'space')) {
+    if (input.jumping) {
         if (entity.isGround) {
             entity.isGround = false;
             entity.isJump = true;
